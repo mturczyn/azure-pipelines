@@ -9,7 +9,7 @@ jobs:
     - task: AzureResourceManagerTemplateDeployment@3
       inputs:
         connectedServiceName: $(ServiceConnectionName)
-        location: 'northeurope'
+        location: 'polandcentral'
         resourceGroupName: $(ResourceGroupName)
         csmFile: ./main.bicep
         overrideParameters: >
