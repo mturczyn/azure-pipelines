@@ -8,8 +8,7 @@ stages:
   jobs:
   - job: Lint
     steps:
-    - script: |
-      az bicep build --file ./main.bicep
+    - script: az bicep build --file ./main.bicep
 - stage: Validate
   jobs:
   - job: Validate
