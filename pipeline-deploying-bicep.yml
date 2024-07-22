@@ -1,4 +1,10 @@
-trigger: none
+trigger: 
+  branches:
+    include: 
+    - master
+  paths:
+    include:
+    - main.bicep
 
 pool:
   vmImage: 'ubuntu-latest' # 'windows-latest'
