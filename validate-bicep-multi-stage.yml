@@ -25,8 +25,9 @@ stages:
   - job: Preview
     steps:
     - task: AzureCLI@2
+      name: RunWhatIf
       inputs:
-        azureSubscription: 'MyServiceConnection'
+        azureSubscription: 'AzurePipelines'
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
