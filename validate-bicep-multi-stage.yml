@@ -12,10 +12,10 @@ stages:
 - stage: Validate
   jobs:
   - job: Validate
-    staps:
+    steps:
     - task: AzureResourceManagerTemplateDeployment@3
       inputs:
-          connectedServiceName: 'MyServiceConnection'
+          connectedServiceName: 'AzurePipelines'
           location: 'northeurope'
           deploymentMode: Validation
           resourceGroupName: $(ResourceGroupName)
@@ -40,7 +40,7 @@ stages:
 - stage: Deploy
   jobs:
     - deployment: Deploy
-      environment: MyAzureEnvironment
+      environment: Prod
       strategy:
         runOnce:
           deploy:
@@ -50,7 +50,7 @@ stages:
               name: Deploy
               displayName: Deploy to Azure
               inputs:
-                connectedServiceName: 'MyServiceConnection'
+                connectedServiceName: 'AzurePipelines'
                 location: $(deploymentDefaultLocation)
                 resourceGroupName: $(ResourceGroupName)
                 csmFile: ./main.bicep
