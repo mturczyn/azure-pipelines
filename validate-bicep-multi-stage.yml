@@ -47,13 +47,13 @@ stages:
         runOnce:
           deploy:
             steps:
-            - checkout: self
+#            - checkout: self
             - task: AzureResourceManagerTemplateDeployment@3
               name: Deploy
               displayName: Deploy to Azure
               inputs:
                 connectedServiceName: $(ServiceConnectionName)
-                location: $(deploymentDefaultLocation)
+                location: 'polandcentral'
                 resourceGroupName: $(ResourceGroupName)
                 csmFile: ./main.bicep
                 deploymentOutputs: deploymentOutputs
