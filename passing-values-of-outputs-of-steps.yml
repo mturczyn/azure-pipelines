@@ -1,4 +1,7 @@
-trigger: none
+trigger: 
+  paths:
+    include:
+    - passing-values-of-outputs-of-steps.yml
 
 stages:
 - stage: Stage1
@@ -13,7 +16,7 @@ stages:
   - job: Job2
     dependsOn: Job1
     variables: 
-      greetingInJob2: $[ dependencies.Job2.outputs['Step1.greeting'] ]
+      greetingInJob2: $[ dependencies.Job1.outputs['Step1.greeting'] ]
     steps:
       - script: echo $(greetingInJob2)
 - stage: Stage2
@@ -21,6 +24,6 @@ stages:
   jobs:
   - job: Job3
     variables:
-      greetingInAnotherStage: $[ stageDependencies.Stage2.Job2.outputs['Step1.myVariableName'] ]
+      greetingInAnotherStage: $[ stageDependencies.Stage1.Job1.outputs['Step1.greeting'] ]
     steps:
       - script: echo $(greetingInAnotherStage)
