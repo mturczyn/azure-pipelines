@@ -4,7 +4,7 @@ param(
   [string] $HostName
 )
 
-Describe 'Toy Website' {
+Describe 'Deployed Website' {
 
 It 'Serves pages over HTTPS' {
       $request = [System.Net.WebRequest]::Create("https://$HostName/")

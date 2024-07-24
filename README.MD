@@ -291,3 +291,33 @@ steps:
   - script: |
       echo This step only runs for production deployments.
 ```
+
+### Passing variables between bicep and pipelines
+
+To pass file between bicep and pipeline, we need to define output variables in bicep `output outVar string = 'hello'`, then use the bicep template in deployment task in pipeline.
+
+To capture taht variable in pipeline, we nee to specify `deploymentOutputs: deploymentOutputs` on deployment task and define shell task (bash in this case):
+```
+- task: AzureResourceManagerTemplateDeployment@3
+  name: Deploy
+  displayName: Deploy to Azure
+  inputs:
+    connectedServiceName: $(ServiceConnectionName)
+    location: 'polandcentral'
+    resourceGroupName: $(ResourceGroupName)
+    csmFile: ./main.bicep
+    deploymentOutputs: deploymentOutputs
+- bash: |
+    echo "##vso[task.setvariable variable=outVar;isoutput=true]$(echo $DEPLOYMENT_OUTPUTS | jq -r '.outVar.value')"
+  name: SaveDeploymentOutputs
+  displayName: Save deployment outputs into variables
+  env:
+    DEPLOYMENT_OUTPUTS: $(deploymentOutputs)
+```
+- `deploymentOutputs: deploymentOutputs` stores bicep outputs in variable.
+- `env: DEPLOYMENT_OUTPUTS: $(deploymentOutputs)` set `DEPLOYMENT_OUTPUTS` environment variable for script
+- `echo "##vso[task.setvariable variable=outVar;isoutput=true]$(echo $DEPLOYMENT_OUTPUTS | jq -r '.outVar.value')"` sets output variable called also `outVar`
+
+Then to use it from other stages, we need to follow syntax `stageDependencies.{stageName}.{jobName}.outputs['{jobName}.{stepName}.{variableName}'] `, in our case it would look like `stageDependencies.Deploy.DeployWebsite.outputs['SaveDeploymentOutputs.appServiceAppHostName']` assuming we have stage `Deploy` with job named `DeployWebsite` which has task `SaveDeploymentOutputs` defined above.
+
+File `validate-bicep-multi-stage.yml` contains example of passing value from Bicep file (which deployes web app), passes it to pipeline, which then passes it to smoke test for tests.

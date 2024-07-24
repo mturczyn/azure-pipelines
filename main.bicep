@@ -20,6 +20,7 @@ resource webapp 'Microsoft.Web/sites@2023-12-01' = {
   name: '${appServicePlanNamePrefix}-webapp'
   location: resourceGroupLocation
   properties: {
+    httpsOnly: true
     serverFarmId: appServicePlan.id
   }
   kind: 'linux'
