@@ -25,3 +25,5 @@ resource webapp 'Microsoft.Web/sites@2023-12-01' = {
   kind: 'linux'
   tags: michalTestTags
 }
+
+output appServiceAppHostName string = webapp.properties.defaultHostName

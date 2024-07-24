@@ -35,21 +35,6 @@ stages:
           az deployment group what-if \
             --resource-group $(ResourceGroupName) \
             --template-file ./main.bicep
-# This is basic deploy task, without environment
-#- stage: Deploy
-#  jobs:
-#  - job: Deploy
-#    steps:
-#      - task: AzureResourceManagerTemplateDeployment@3
-#        name: Deploy
-#        displayName: Deploy to Azure
-#        inputs:
-#          connectedServiceName: $(ServiceConnectionName)
-#          deploymentName: $(Build.BuildNumber)
-#          location: 'polandcentral'
-#          resourceGroupName: $(ResourceGroupName)
-#          csmFile: ./main.bicep
-
 # In this step we get output from the bicep file and pass it to our
 # pipeline, for smoke tests to run. Returned value is URL for app
 # service (web app) and later test step uses it to try and access
@@ -71,37 +56,35 @@ stages:
                 location: 'polandcentral'
                 resourceGroupName: $(ResourceGroupName)
                 csmFile: ./main.bicep
-                deploymentOutputs: deploymentOutputs
             - bash: |
                 echo "##vso[task.setvariable variable=appServiceAppHostName;isOutput=true]$(echo $DEPLOYMENT_OUTPUTS | jq -r '.appServiceAppHostName.value')"
               name: SaveDeploymentOutputs
               displayName: Save deployment outputs into variables
               env:
                 DEPLOYMENT_OUTPUTS: $(deploymentOutputs)
-
-# - stage: SmokeTest
-#   jobs:
-#   - job: SmokeTest
-#     displayName: Smoke test with Smoke Testing from powershell script with Pester (unit testing framework for powershell)
-#     variables:
-#       appServiceAppHostName: $[ stageDependencies.Deploy.DeployWebsite.outputs['DeployWebsite.SaveDeploymentOutputs.appServiceAppHostName'] ]
-#     steps:
-#       - task: PowerShell@2
-#         name: RunSmokeTests
-#         displayName: Run smoke tests
-#         inputs:
-#           targetType: inline
-#           script: |
-#             $container = New-PesterContainer `
-#               -Path './Pipeline.Smoke.Tests.ps1' `
-#               -Data @{ HostName = '$(appServiceAppHostName)' }
-#             Invoke-Pester `
-#               -Container $container `
-#               -CI
-#       - task: PublishTestResults@2
-#         name: PublishTestResults
-#         displayName: Publish test results
-#         condition: always()
-#         inputs:
-#           testResultsFormat: NUnit
-#           testResultsFiles: 'testResults.xml'
+- stage: SmokeTest
+  jobs:
+  - job: SmokeTest
+    displayName: Smoke test with Smoke Testing from powershell script with Pester (unit testing framework for powershell)
+    variables:
+      appServiceAppHostName: $[ stageDependencies.Deploy.DeployWebsite.outputs['DeployWebsite.SaveDeploymentOutputs.appServiceAppHostName'] ]
+    steps:
+      - task: PowerShell@2
+        name: RunSmokeTests
+        displayName: Run smoke tests
+        inputs:
+          targetType: inline
+          script: |
+            $container = New-PesterContainer `
+              -Path './Website.Test.ps1' `
+              -Data @{ HostName = '$(appServiceAppHostName)' }
+            Invoke-Pester `
+              -Container $container `
+              -CI
+      - task: PublishTestResults@2
+        name: PublishTestResults
+        displayName: Publish test results
+        condition: always()
+        inputs:
+          testResultsFormat: NUnit
+          testResultsFiles: 'testResults.xml'
