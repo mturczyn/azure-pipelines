@@ -1,3 +1,5 @@
+trigger: none
+
 stages:
 - stage: Stage1
   jobs:

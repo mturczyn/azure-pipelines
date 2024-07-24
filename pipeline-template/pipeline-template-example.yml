@@ -1,3 +1,5 @@
+trigger: none
+
 steps:
 - template: script.yml
   parameters:

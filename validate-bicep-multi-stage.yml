@@ -1,3 +1,6 @@
+# Prevent default trigger on every commit.
+trigger: none
+
 # This is multi stage pipeline that first checks the code,
 # this deploys resources using bicep file, so it also
 # verifies the deployment and run post-deployment
