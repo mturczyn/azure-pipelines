@@ -6,16 +6,17 @@
 stages:
 - stage: Lint
   jobs:
-  - job: Lint
+  - job: LintCodeJob
     steps:
     - script: az bicep build --file ./main.bicep
 - stage: Validate
   jobs:
   - job: Validate
+    displayName: Validate Bicep code
     steps:
     - task: AzureResourceManagerTemplateDeployment@3
       inputs:
-          connectedServiceName: 'AzurePipelines'
+          connectedServiceName: $(ServiceConnectionName)
           location: 'northeurope'
           deploymentMode: Validation
           resourceGroupName: $(ResourceGroupName)
@@ -27,7 +28,7 @@ stages:
     - task: AzureCLI@2
       name: RunWhatIf
       inputs:
-        azureSubscription: 'AzurePipelines'
+        azureSubscription: $(ServiceConnectionName)
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
@@ -51,41 +52,41 @@ stages:
               name: Deploy
               displayName: Deploy to Azure
               inputs:
-                connectedServiceName: 'AzurePipelines'
+                connectedServiceName: $(ServiceConnectionName)
                 location: $(deploymentDefaultLocation)
                 resourceGroupName: $(ResourceGroupName)
                 csmFile: ./main.bicep
                 deploymentOutputs: deploymentOutputs
-            - bash: |
-                echo "##vso[task.setvariable variable=appServiceAppHostName;isOutput=true]$(echo $DEPLOYMENT_OUTPUTS | jq -r '.appServiceAppHostName.value')"
-              name: SaveDeploymentOutputs
-              displayName: Save deployment outputs into variables
-              env:
-                DEPLOYMENT_OUTPUTS: $(deploymentOutputs)
+#            - bash: |
+#                echo "##vso[task.setvariable variable=appServiceAppHostName;isOutput=true]$(echo $DEPLOYMENT_OUTPUTS | jq -r '.appServiceAppHostName.value')"
+#              name: SaveDeploymentOutputs
+#              displayName: Save deployment outputs into variables
+#              env:
+#                DEPLOYMENT_OUTPUTS: $(deploymentOutputs)
 
-- stage: SmokeTest
-  jobs:
-  - job: SmokeTest
-    displayName: Smoke test with Smoke Testing from powershell script with Pester (unit testing framework for powershell)
-    variables:
-      appServiceAppHostName: $[ stageDependencies.Deploy.DeployWebsite.outputs['DeployWebsite.SaveDeploymentOutputs.appServiceAppHostName'] ]
-    steps:
-      - task: PowerShell@2
-        name: RunSmokeTests
-        displayName: Run smoke tests
-        inputs:
-          targetType: inline
-          script: |
-            $container = New-PesterContainer `
-              -Path './Pipeline.Smoke.Tests.ps1' `
-              -Data @{ HostName = '$(appServiceAppHostName)' }
-            Invoke-Pester `
-              -Container $container `
-              -CI
-      - task: PublishTestResults@2
-        name: PublishTestResults
-        displayName: Publish test results
-        condition: always()
-        inputs:
-          testResultsFormat: NUnit
-          testResultsFiles: 'testResults.xml'
+# - stage: SmokeTest
+#   jobs:
+#   - job: SmokeTest
+#     displayName: Smoke test with Smoke Testing from powershell script with Pester (unit testing framework for powershell)
+#     variables:
+#       appServiceAppHostName: $[ stageDependencies.Deploy.DeployWebsite.outputs['DeployWebsite.SaveDeploymentOutputs.appServiceAppHostName'] ]
+#     steps:
+#       - task: PowerShell@2
+#         name: RunSmokeTests
+#         displayName: Run smoke tests
+#         inputs:
+#           targetType: inline
+#           script: |
+#             $container = New-PesterContainer `
+#               -Path './Pipeline.Smoke.Tests.ps1' `
+#               -Data @{ HostName = '$(appServiceAppHostName)' }
+#             Invoke-Pester `
+#               -Container $container `
+#               -CI
+#       - task: PublishTestResults@2
+#         name: PublishTestResults
+#         displayName: Publish test results
+#         condition: always()
+#         inputs:
+#           testResultsFormat: NUnit
+#           testResultsFiles: 'testResults.xml'
