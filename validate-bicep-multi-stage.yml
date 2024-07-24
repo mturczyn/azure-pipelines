@@ -35,48 +35,49 @@ stages:
           az deployment group what-if \
             --resource-group $(ResourceGroupName) \
             --template-file ./main.bicep
-- stage: Deploy
-  jobs:
-  - job: Deploy
-    steps:
-      - task: AzureResourceManagerTemplateDeployment@3
-        name: Deploy
-        displayName: Deploy to Azure
-        inputs:
-          connectedServiceName: $(ServiceConnectionName)
-          deploymentName: $(Build.BuildNumber)
-          location: 'polandcentral'
-          resourceGroupName: $(ResourceGroupName)
-          csmFile: ./main.bicep
+# This is basic deploy task, without environment
+#- stage: Deploy
+#  jobs:
+#  - job: Deploy
+#    steps:
+#      - task: AzureResourceManagerTemplateDeployment@3
+#        name: Deploy
+#        displayName: Deploy to Azure
+#        inputs:
+#          connectedServiceName: $(ServiceConnectionName)
+#          deploymentName: $(Build.BuildNumber)
+#          location: 'polandcentral'
+#          resourceGroupName: $(ResourceGroupName)
+#          csmFile: ./main.bicep
 
 # In this step we get output from the bicep file and pass it to our
 # pipeline, for smoke tests to run. Returned value is URL for app
 # service (web app) and later test step uses it to try and access
 # website.
-#- stage: Deploy
-#  jobs:
-#    - deployment: Deploy
-#      environment: Prod
-#      strategy:
-#        runOnce:
-#          deploy:
-#            steps:
-#            - checkout: self
-#            - task: AzureResourceManagerTemplateDeployment@3
-#              name: Deploy
-#              displayName: Deploy to Azure
-#              inputs:
-#                connectedServiceName: $(ServiceConnectionName)
-#                location: 'polandcentral'
-#                resourceGroupName: $(ResourceGroupName)
-#                csmFile: ./main.bicep
-#                deploymentOutputs: deploymentOutputs
-#            - bash: |
-#                echo "##vso[task.setvariable variable=appServiceAppHostName;isOutput=true]$(echo $DEPLOYMENT_OUTPUTS | jq -r '.appServiceAppHostName.value')"
-#              name: SaveDeploymentOutputs
-#              displayName: Save deployment outputs into variables
-#              env:
-#                DEPLOYMENT_OUTPUTS: $(deploymentOutputs)
+- stage: Deploy
+  jobs:
+    - deployment: Deploy
+      environment: Prod
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - checkout: self
+            - task: AzureResourceManagerTemplateDeployment@3
+              name: Deploy
+              displayName: Deploy to Azure
+              inputs:
+                connectedServiceName: $(ServiceConnectionName)
+                location: 'polandcentral'
+                resourceGroupName: $(ResourceGroupName)
+                csmFile: ./main.bicep
+                deploymentOutputs: deploymentOutputs
+            - bash: |
+                echo "##vso[task.setvariable variable=appServiceAppHostName;isOutput=true]$(echo $DEPLOYMENT_OUTPUTS | jq -r '.appServiceAppHostName.value')"
+              name: SaveDeploymentOutputs
+              displayName: Save deployment outputs into variables
+              env:
+                DEPLOYMENT_OUTPUTS: $(deploymentOutputs)
 
 # - stage: SmokeTest
 #   jobs:
