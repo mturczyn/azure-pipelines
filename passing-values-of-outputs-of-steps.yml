@@ -12,10 +12,11 @@ stages:
       - script: echo "##vso[task.setvariable variable=greeting;isOutput=true]Hello World!"
         name: Step1
       # Read variable's value
-      - script: echo $(greeting)
+      - script: echo $(Step1.greeting)
   - job: Job2
     dependsOn: Job1
     variables: 
+      # Read variable's value
       greetingInJob2: $[ dependencies.Job1.outputs['Step1.greeting'] ]
     steps:
       - script: echo $(greetingInJob2)
@@ -24,6 +25,7 @@ stages:
   jobs:
   - job: Job3
     variables:
+      # Read variable's value
       greetingInAnotherStage: $[ stageDependencies.Stage1.Job1.outputs['Step1.greeting'] ]
     steps:
       - script: echo $(greetingInAnotherStage)
