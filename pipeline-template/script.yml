@@ -5,9 +5,9 @@ parameters:
 steps:
 - script: echo Hello ${{parameters.message}}
 
-- ${{ if ne(parameters.environmentType, 'Production') }}:
+- ${{ if ne(parameters.message, 'Production') }}:
   - script: |
       echo This step only runs if parameter passed was different than 'Production'
 - script: |
       echo This step only runs if parameter passed was different than 'Production'
-  condition: ne('${{ parameters.environmentType }}', 'Production')
+  condition: ne('${{ parameters.message }}', 'Production')
