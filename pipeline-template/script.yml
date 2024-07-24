@@ -1,0 +1,13 @@
+parameters:
+- name: message
+  type: string
+
+steps:
+- script: echo Hello ${{parameters.message}}
+
+- ${{ if ne(parameters.environmentType, 'Production') }}:
+  - script: |
+      echo This step only runs if parameter passed was different than 'Production'
+- script: |
+      echo This step only runs if parameter passed was different than 'Production'
+  condition: ne('${{ parameters.environmentType }}', 'Production')

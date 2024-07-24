@@ -1,0 +1,4 @@
+steps:
+- template: script.yml
+  parameters:
+    message: 'Message From Outer pipeline file'
