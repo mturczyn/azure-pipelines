@@ -1,7 +1,7 @@
 param michalTestTags object = {tag1: 'testing pipelines'}
 
 var resourceGroupLocation = resourceGroup().location
-var appServicePlanNamePrefix = 'bicep-test'
+var appServicePlanNamePrefix = 'pipeline-bicep-test'
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: '${appServicePlanNamePrefix}-asp'
