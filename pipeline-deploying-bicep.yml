@@ -12,5 +12,5 @@ jobs:
         location: 'polandcentral'
         resourceGroupName: $(ResourceGroupName)
         csmFile: ./main.bicep
-        overrideParameters: >
-          -parameterName parameterValue
+        # overrideParameters: >
+        #   -parameterName parameterValue
