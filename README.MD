@@ -34,7 +34,7 @@ To deploy bicep file we need to define following deploymnet task (`task` is subs
 
 ### Using variables
 
-To use variables in pipeline, first we need to define them in repository host (Azure DevOps in our case). Later, we can use them in pipeline file as follows woth special sntax `$(VariableName)`:
+To use variables in pipeline, first we need to define them in repository host (Azure DevOps in our case - in pipeline edit mode we can define variables for the pipeline). Later, we can use them in pipeline file as follows woth special sntax `$(VariableName)`:
 ```
 - task: AzureResourceManagerTemplateDeployment@3
   inputs:
@@ -320,4 +320,4 @@ To capture taht variable in pipeline, we nee to specify `deploymentOutputs: depl
 
 Then to use it from other stages, we need to follow syntax `stageDependencies.{stageName}.{jobName}.outputs['{jobName}.{stepName}.{variableName}'] `, in our case it would look like `stageDependencies.Deploy.DeployWebsite.outputs['SaveDeploymentOutputs.appServiceAppHostName']` assuming we have stage `Deploy` with job named `DeployWebsite` which has task `SaveDeploymentOutputs` defined above.
 
-File `validate-bicep-multi-stage.yml` contains example of passing value from Bicep file (which deployes web app), passes it to pipeline, which then passes it to smoke test for tests.
+File `validate-bicep-multi-stage.yml` or `passing-values-of-outputs-of-steps.yml` contains example of passing value from Bicep file (which deployes web app), passes it to pipeline, which then passes it to smoke test for tests.
