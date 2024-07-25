@@ -159,7 +159,7 @@ stages:
   jobs:
   - job: DeployEurope
 ```
-`dependsOn` keyword speicifies what stage needs to finish *succesfully* before the stage can start.
+`dependsOn` keyword specifies what stage needs to finish *succesfully* before the stage can start.
 
 We can also run stages conditionally, when some stage failed for example:
 ```
@@ -318,6 +318,8 @@ To capture taht variable in pipeline, we nee to specify `deploymentOutputs: depl
 - `env: DEPLOYMENT_OUTPUTS: $(deploymentOutputs)` set `DEPLOYMENT_OUTPUTS` environment variable for script
 - `echo "##vso[task.setvariable variable=outVar;isoutput=true]$(echo $DEPLOYMENT_OUTPUTS | jq -r '.outVar.value')"` sets output variable called also `outVar`
 
-Then to use it from other stages, we need to follow syntax `stageDependencies.{stageName}.{jobName}.outputs['{jobName}.{stepName}.{variableName}'] `, in our case it would look like `stageDependencies.Deploy.DeployWebsite.outputs['SaveDeploymentOutputs.appServiceAppHostName']` assuming we have stage `Deploy` with job named `DeployWebsite` which has task `SaveDeploymentOutputs` defined above.
+Then to use it from other stages, we need to follow syntax `stageDependencies.{stageName}.{jobName}.outputs['{stepName}.{variableName}'] `, in our case it would look like `stageDependencies.Deploy.DeployWebsite.outputs['SaveDeploymentOutputs.outVar']` assuming we have stage `Deploy` with job named `DeployWebsite` which has task `SaveDeploymentOutputs` defined above.
+
+If we use `deployment` instead of `task` convention becomes: `stageDependencies.{stageName}.{deploymentName}.outputs['{deploymentName}.{variableName}'] `.
 
 File `validate-bicep-multi-stage.yml` or `passing-values-of-outputs-of-steps.yml` contains example of passing value from Bicep file (which deployes web app), passes it to pipeline, which then passes it to smoke test for tests.
