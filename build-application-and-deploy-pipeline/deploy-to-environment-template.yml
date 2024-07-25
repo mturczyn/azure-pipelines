@@ -1,0 +1,52 @@
+parameters:
+- name: environmentType
+  type: string
+- name: connectedServiceName
+  type: string
+  default: AzurePipelines
+- name: ResourceGroupName
+  type: string
+  default: intrinsic-rg
+
+- variables:
+  bicepFile: ./website.bicep
+  
+- stage: Deploy_${{parameters.environmentType}}
+  displaName: Deploy (${{parameters.environmentType}} Environment)
+  jobs:
+  - deployment: DeployWebsite
+    displaName: Deploy website
+    pool:
+      vmImage: ubuntu-latest
+    envrionment: ${{parameters.environmentType}}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+            
+            - task: AzureResourceManagerTemplateDeployment@3
+              name: DeployBicepFile
+              displayName: Deploy Bicep file
+              inputs:
+                connectedServiceName: ${{parameters.connectedServiceName}}
+                deploymentName: $(Build.BuildNumber)
+                location: 'centralpoland'
+                resourceGroupName: ${{parameters.ResourceGroupName}}
+                csmFile: $(bicepFile)
+                overrideParameters: >
+                  -environmentType $(EnvironmentType)
+                deploymentOutputs: deploymentOutputs
+
+            - task: AzureRmWebAppDeployment@4
+              name: DeployWebsiteApp
+              displayName: Deploy website
+              inputs:
+                appType: webApp
+                ConnectionType: AzureRM
+                azureSubscription: ${{parameters.connectedServiceName}}
+                ResourceGroupName: ${{parameters.ResourceGroupName}}
+                WebAppName: $(appServiceAppName)
+                Package: '$(Pipeline.Workspace)/website/publish.zip'
+
+# Smoke test

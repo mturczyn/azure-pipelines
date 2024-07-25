@@ -1,0 +1,27 @@
+jobs:
+- job: Build
+  displayName: Build application
+  pool:
+    vmImage: ubuntu-latest
+
+  steps:
+    # Build, copy and publish the website.
+    - task: DotNetCoreCLI@2
+      displaName: Build publishable website
+      inputs:
+        command: 'publish'
+        publishWebProjects: true
+      
+    - task: 'CopyFiles@2'
+      displayName: Copy publishable website
+      inputs:
+        sourceFoler: '@(Build.SourcesDirectory)/src/'
+        contents: '**/publish.zip'
+        targetFolder: '$(Build.ArtifactSTagingDirectory)/website'
+        flattenFolders: true
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish website as pipeline artifact
+      inputs:
+        pathToPublish: '$(Build.ArtifactSTagingDirectory)/website'
+        artifactName: 'website'
