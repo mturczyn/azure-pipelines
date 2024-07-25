@@ -1,0 +1,48 @@
+trigger: none
+
+variables:
+- name: ServiceConnectionName
+  value: AzurePipelines
+- name: AzureResourceGroupName
+  value: intrinsic-rg
+- name: AzureRegion
+  value: northeurope
+- name: TemplateSpecName
+  value: intrinsic-infrastructure
+- name: TemplateSpecFilePath
+  value: main.bicep
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+
+- stage: Lint
+  jobs:
+  - job: LintCode
+    displayName: Lint code
+    steps:
+      - script: |
+          az bicep build --file $(TemplateSpecFilePath)
+        name: LintBicepCode
+        displayName: Run Bicep linter
+
+- stage: Publish
+  jobs:
+  - job: Publish
+    steps:
+      - task: AzureCLI@2
+        name: Publish
+        displayName: Publish template spec
+        inputs:
+          azureSubscription: $(ServiceConnectionName)
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az ts create \
+              --resource-group $(AzureResourceGroupName) \
+              --name $(TemplateSpecName) \
+              --version $(Build.BuildNumber) \
+              --template-file $(TemplateSpecFilePath) \
+              --location $(AzureRegion) \
+              --yes
