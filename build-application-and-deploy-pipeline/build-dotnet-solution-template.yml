@@ -7,7 +7,7 @@ jobs:
   steps:
     # Build, copy and publish the website.
     - task: DotNetCoreCLI@2
-      displaName: Build publishable website
+      displayName: Build publishable website
       inputs:
         command: 'publish'
         publishWebProjects: true

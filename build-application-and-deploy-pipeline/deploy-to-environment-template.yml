@@ -8,17 +8,15 @@ parameters:
   type: string
   default: intrinsic-rg
 
-- variables:
-  bicepFile: ./website.bicep
-  
+stages:
 - stage: Deploy_${{parameters.environmentType}}
-  displaName: Deploy (${{parameters.environmentType}} Environment)
+  displayName: Deploy (${{parameters.environmentType}} Environment)
   jobs:
   - deployment: DeployWebsite
-    displaName: Deploy website
+    displayName: Deploy website
     pool:
       vmImage: ubuntu-latest
-    envrionment: ${{parameters.environmentType}}
+    environment: ${{parameters.environmentType}}
     strategy:
       runOnce:
         deploy:
@@ -33,7 +31,7 @@ parameters:
                 deploymentName: $(Build.BuildNumber)
                 location: 'centralpoland'
                 resourceGroupName: ${{parameters.ResourceGroupName}}
-                csmFile: $(bicepFile)
+                csmFile: ./website.bicep
                 overrideParameters: >
                   -environmentType $(EnvironmentType)
                 deploymentOutputs: deploymentOutputs
